@@ -1,0 +1,84 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index of Tom's Published GitHub Pages Repositories</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        h1 { margin-top: 20px; }
+        #buttons { margin: 20px auto; max-width: 800px; }
+        .repo-container { margin: 20px 0; text-align: left; }
+        .repo-button {
+            display: inline-block;
+            margin-bottom: 5px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .repo-button:hover { background-color: #0056b3; }
+        .repo-description { margin: 5px 0; color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Tom's Active Published GitHub Pages Repositories</h1>
+    <div id="buttons"></div>
+    <script>
+        console.log('Starting to fetch repositories...');
+        fetch('https://api.github.com/users/tbenitz/repos', {
+            headers: { 'Accept': 'application/vnd.github.v3+json' }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch repositories: ' + response.status);
+                }
+                console.log('Repositories fetched successfully.');
+                return response.json();
+            })
+            .then(repos => {
+                console.log('Total repositories found: ' + repos.length);
+                const filteredRepos = repos.filter(repo =>
+                    !repo.private &&
+                    !repo.archived &&
+                    !repo.fork &&
+                    repo.name !== 'tbenitz.github.io' &&
+                    repo.has_pages
+                );
+                console.log('Filtered active public repositories with Pages: ' + filteredRepos.length);
+                const container = document.getElementById('buttons');
+                if (filteredRepos.length === 0) {
+                    container.textContent = 'No active published repositories found.';
+                } else {
+                    filteredRepos.forEach(repo => {
+                        console.log('Adding entry for: ' + repo.name);
+                        const repoDiv = document.createElement('div');
+                        repoDiv.className = 'repo-container';
+                        
+                        const link = document.createElement('a');
+                        link.textContent = repo.name;
+                        link.href = `https://tbenitz.github.io/${repo.name}`;
+                        link.target = '_blank';
+                        link.className = 'repo-button';
+                        repoDiv.appendChild(link);
+                        
+                        const desc = document.createElement('p');
+                        desc.textContent = repo.description || 'No description provided.';
+                        desc.className = 'repo-description';
+                        repoDiv.appendChild(desc);
+                        
+                        container.appendChild(repoDiv);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Overall error:', error);
+                document.getElementById('buttons').textContent = 'Error loading repositories. Check console for details.';
+            });
+    </script>
+</body>
+</html>
