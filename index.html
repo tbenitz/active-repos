@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,22 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Index of Tom's Published GitHub Pages Repositories</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        h1 { margin-top: 20px; }
-        #buttons { margin: 20px auto; max-width: 800px; }
-        .repo-container { margin: 20px 0; text-align: left; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #4a4a4a;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            animation: fadeInDown 1s ease-out;
+        }
+        #buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+        .repo-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        .repo-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
         .repo-button {
-            display: inline-block;
-            margin-bottom: 5px;
-            padding: 10px 20px;
-            background-color: #007bff;
+            display: block;
+            text-align: center;
+            padding: 12px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
             color: white;
             text-decoration: none;
-            border-radius: 5px;
-            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+            margin-bottom: 10px;
         }
-        .repo-button:hover { background-color: #0056b3; }
-        .repo-description { margin: 5px 0; color: #333; }
+        .repo-button:hover {
+            background: linear-gradient(135deg, #0056b3, #007bff);
+        }
+        .repo-description {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .repo-container:nth-child(1) { animation-delay: 0.1s; }
+        .repo-container:nth-child(2) { animation-delay: 0.2s; }
+        .repo-container:nth-child(3) { animation-delay: 0.3s; }
+        /* Add more as needed */
     </style>
 </head>
 <body>
@@ -47,6 +98,7 @@
                     !repo.archived &&
                     !repo.fork &&
                     repo.name !== 'tbenitz.github.io' &&
+                    repo.name !== 'active-repos' &&
                     repo.has_pages
                 );
                 console.log('Filtered active public repositories with Pages: ' + filteredRepos.length);
