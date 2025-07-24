@@ -73,7 +73,7 @@
         .repo-container:nth-child(1) { animation-delay: 0.1s; }
         .repo-container:nth-child(2) { animation-delay: 0.2s; }
         .repo-container:nth-child(3) { animation-delay: 0.3s; }
-        /* Add more as needed */
+        /* Add more as needed, or use JavaScript to set delays dynamically */
     </style>
 </head>
 <body>
@@ -81,18 +81,51 @@
     <div id="buttons"></div>
     <script>
         console.log('Starting to fetch repositories...');
-        fetch('https://api.github.com/users/tbenitz/repos', {
-            headers: { 'Accept': 'application/vnd.github.v3+json' }
-        })
-            .then(response => {
+
+        async function fetchAllRepos(url) {
+            let allRepos = [];
+            let nextUrl = url;
+
+            while (nextUrl) {
+                const response = await fetch(nextUrl, {
+                    headers: { 'Accept': 'application/vnd.github.v3+json' }
+                });
+
                 if (!response.ok) {
                     throw new Error('Failed to fetch repositories: ' + response.status);
                 }
-                console.log('Repositories fetched successfully.');
-                return response.json();
-            })
-            .then(repos => {
-                console.log('Total repositories found: ' + repos.length);
+
+                const repos = await response.json();
+                allRepos = allRepos.concat(repos);
+
+                // Check for the 'Link' header to find the next page
+                const linkHeader = response.headers.get('Link');
+                nextUrl = null; // Assume no next page unless found
+
+                if (linkHeader) {
+                    const links = linkHeader.split(', ').map(link => {
+                        const parts = link.split(';');
+                        return {
+                            url: parts[0].replace(/<(.*)>/, '$1').trim(),
+                            rel: parts[1].replace(/rel="(.*)"/, '$1').trim()
+                        };
+                    });
+                    const nextLink = links.find(link => link.rel === 'next');
+                    if (nextLink) {
+                        nextUrl = nextLink.url;
+                    }
+                }
+            }
+            return allRepos;
+        }
+
+        (async () => {
+            try {
+                const initialUrl = 'https://api.github.com/users/tbenitz/repos?per_page=100'; // Increased per_page to reduce requests
+                const repos = await fetchAllRepos(initialUrl);
+
+                console.log('Total repositories found (before filtering): ' + repos.length);
+
                 const filteredRepos = repos.filter(repo =>
                     !repo.private &&
                     !repo.archived &&
@@ -101,7 +134,9 @@
                     repo.name !== 'active-repos' &&
                     repo.has_pages
                 );
+
                 console.log('Filtered active public repositories with Pages: ' + filteredRepos.length);
+
                 const container = document.getElementById('buttons');
                 if (filteredRepos.length === 0) {
                     container.textContent = 'No active published repositories found.';
@@ -110,27 +145,27 @@
                         console.log('Adding entry for: ' + repo.name);
                         const repoDiv = document.createElement('div');
                         repoDiv.className = 'repo-container';
-                        
+
                         const link = document.createElement('a');
                         link.textContent = repo.name;
                         link.href = `https://tbenitz.github.io/${repo.name}`;
                         link.target = '_blank';
                         link.className = 'repo-button';
                         repoDiv.appendChild(link);
-                        
+
                         const desc = document.createElement('p');
                         desc.textContent = repo.description || 'No description provided.';
                         desc.className = 'repo-description';
                         repoDiv.appendChild(desc);
-                        
+
                         container.appendChild(repoDiv);
                     });
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Overall error:', error);
                 document.getElementById('buttons').textContent = 'Error loading repositories. Check console for details.';
-            });
+            }
+        })();
     </script>
 </body>
 </html>
